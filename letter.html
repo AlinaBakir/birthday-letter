@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Письмо</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* === ШРИФТ === */
+@font-face {
+    font-family: 'Plainot';
+    src: url('ofont.ru_Skellyman.ttf') format('truetype');
+}
+
+/* === ЦВЕТА === */
+:root {
+    --paper: #fdf5d7;
+    --warm: #f3d88f;
+    --ink: #3b2f2f;
+}
+
+/* === ОБЩЕЕ === */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    background: #0f0f0f;
+    font-family: 'Plainot', cursive;
+    min-height: 100svh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 2s ease;
+    padding: 16px;
+}
+
+/* === КОНВЕРТ === */
+.envelope {
+    width: 340px;
+    height: 220px;
+    background: #e6d3a3;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 20px 40px rgba(0,0,0,.6);
+    border-radius: 6px;
+}
+
+.envelope::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-left: 170px solid transparent;
+    border-right: 170px solid transparent;
+    border-top: 110px solid #d4bd8c;
+    transform-origin: top;
+    transition: transform 1.2s ease;
+}
+
+.envelope.open::before {
+    transform: rotateX(180deg);
+}
+
+/* === ПИСЬМО === */
+.letter {
+    display: none;
+    width: 100%;
+    max-width: 720px;
+    background: var(--paper);
+    background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    padding: 36px 28px;
+    border-radius: 8px;
+    box-shadow:
+        0 30px 60px rgba(0,0,0,.45),
+        inset 0 0 35px rgba(0,0,0,.12);
+    font-size: 22px;
+    line-height: 1.9;
+}
+
+.line {
+    margin-bottom: 6px;
+}
+
+.cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--ink);
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* === МОБИЛКА === */
+@media (max-width: 480px) {
+    .letter {
+        font-size: 21px;
+        padding: 28px 22px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="envelope" id="envelope" onclick="openLetter()"></div>
+
+<div class="letter" id="letter"></div>
+
+<audio id="paper">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-paper-rustle-quick-1231.mp3">
+</audio>
+
+<script>
+const text = `
+Что ж… вот тебе и 19 лет.  
+Глядишь — совсем скоро 20, но давай не будем сейчас об этом.
+
+Мы знакомы с 22 апреля (или Диего-Диего апрель), и вот уже почти пять лет мы общаемся без перерывов. Почти. Потому что, конечно, учёба иногда пыталась устроить нам тест-драйв: проверить, как мы будем воспринимать жизнь, если она начнёт давить со всех сторон. Но даже тогда, на "похуй", мы всё равно пытались удержать этот коннект между собой.
+
+Мы видели друг друга разными.  
+Твою рыжую эру.  
+Мою красноволосую эру.  
+Эру, когда мы обе отчаянно старались делать эдиты.  
+Эру, когда Академия Амбрелла была хитом — ох уж этот выход третьего сезона… а о четвёртом мы молчим. Его не существует.
+
+Я до сих пор помню, как ты пыталась найти себе в Талдыке сначала девушку, потом парня. Целых двух. Которые в итоге оказались одним человеком… и вообще другой личностью.  
+А теперь у тебя есть Юсуф — пусть я о нём знаю абсолютно нифига, но если тебе хорошо с ним, значит, так и должно быть.
+
+Фанфики писались так, что даже веганские блины в три часа ночи казались вкуснее жизни.  
+Помню, как ты заканчивала 9 класс, боялась экзаменов и мечтала скорее попасть в колледж.  
+А сейчас ты смотришь Вуди, Овсянку и ещё какого-то там человека, повторяешь их макияж и делаешь это своим хобби. Да, они меняются часто. Но кого это вообще волнует? Жизнь одна — и ею нужно наслаждаться.
+
+Сверхъестественное навсегда будет ассоциироваться у тебя со мной. Ну а кто ещё мог заставить тебя смотреть этот шедевр?  
+Хотя ты была той ещё ссыклой и боялась первых сезонов. Но именно они и создают ту самую атмосферу.
+
+К чему я всё это…  
+Я хочу пожелать тебе крепкого здоровья — потому что ты болеешь чаще, чем кто бы то ни было.  
+Побольше денег — они точно не будут лишними.  
+И, наконец, чтобы мы встретились. По-настоящему. Не в сообщениях.
+
+Теперь и ты дошла до моего возраста — и мы официально на одном уровне старости.  
+С днём рождения тебя, дорогая Еризо 🫶🏻
+
+Я тут.  
+Ты тут.  
+Мы тут.
+`;
+
+let lineIndex = 0;
+
+function openLetter() {
+    document.body.style.background = "var(--warm)";
+    document.getElementById("paper").play();
+
+    const env = document.getElementById("envelope");
+    env.classList.add("open");
+
+    setTimeout(() => {
+        env.style.display = "none";
+        const letter = document.getElementById("letter");
+        letter.style.display = "block";
+        writeLine();
+    }, 1200);
+}
+
+function writeLine() {
+    const lines = text.split("\n");
+    if (lineIndex >= lines.length) return;
+
+    const lineDiv = document.createElement("div");
+    lineDiv.className = "line";
+
+    const cursor = document.createElement("span");
+    cursor.className = "cursor";
+
+    letter.appendChild(lineDiv);
+    lineDiv.appendChild(cursor);
+
+    let charIndex = 0;
+    const interval = setInterval(() => {
+        if (charIndex < lines[lineIndex].length) {
+            cursor.insertAdjacentText("beforebegin", lines[lineIndex][charIndex]);
+            charIndex++;
+        } else {
+            clearInterval(interval);
+            cursor.remove();
+            lineIndex++;
+            setTimeout(writeLine, 350);
+        }
+    }, 35);
+}
+</script>
+
+</body>
+</html>
